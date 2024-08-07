@@ -192,7 +192,11 @@ func postConsumeQuota(ctx context.Context, usage *relaymodel.Usage, meta *meta.M
 		logger.Error(ctx, "error update user quota cache: "+err.Error())
 	}
 
-	logContent, _ := json.Marshal(textRequest.Messages)
+	messages := append(textRequest.Messages, relaymodel.Message{
+		Role:    "assistant",
+		Content: usage.ResponseText,
+	})
+	logContent, _ := json.Marshal(messages)
 	model.RecordConsumeLog(ctx, meta.UserId, meta.ChannelId, promptTokens, completionTokens, textRequest.Model, meta.TokenName, quota, string(logContent))
 	model.UpdateUserUsedQuotaAndRequestCount(meta.UserId, quota)
 	model.UpdateChannelUsedQuota(meta.ChannelId, quota)
